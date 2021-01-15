@@ -1,0 +1,33 @@
+@font-face {
+  font-family: 'INVASION2000';
+  src: URL('/arcadeFont/INVASION2000.ttf') format('truetype');
+}
+
+#score-holder {
+	position: absolute;
+	display: block;
+	top: 10px;
+	width: 100%;
+	text-align: center;
+	z-index: 100;
+}
+
+#game-over {
+	color: white;
+	font-family: 'INVASION2000';
+}
+
+.try-again {
+	color: white;
+	font-family: 'INVASION2000';
+}
+
+.score {
+	color: white;
+	font-family: 'INVASION2000';
+}
+
+
+
+
+

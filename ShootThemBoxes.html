@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset='utf-8'>
+	<title>FUN</title>
+	<link rel="stylesheet" type="text/css" href="fun.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+	integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+</head>
+	<body style="margin: 0; overflow: hidden: padding: 0;">
+		<script type='text/javascript' src="three.js-master/build/three.min.js"></script>
+		<script type='text/javascript' src="three.js-master/examples/js/libs/stats.min.js"></script>
+		<script type='module'>
+			"use strict"
+
+			var scene, camera, renderer
+
+			// Lights
+			var ambientLight, directionalLight, cameraLight
+
+			// Player fields
+			var player
+			var playerColor = new THREE.Color(0x583d72)
+			var playerWidth = 50
+			var playerHeight = 50
+			var playerDepth = 50
+
+			// Enemi fields
+			var enemies = []
+			var enemiSpawnCounter = 0
+
+			// Plane fields
+			var plane
+			var planeColor = new THREE.Color(0xff8e71)
+			var planeWidth = 800
+			var planeHeight = 600
+			var planeDepth = 20
+
+			// The projectile shot by player
+			var projectile = new THREE.Object3D()
+
+			// Array containg projectiles
+			var projectiles = []
+
+			// Time fields
+			var clock = new THREE.Clock()
+			var startTime
+			var currentTime = new THREE.Clock()
+
+			// Score fields
+			var score = 0
+			var scoreUI = document.getElementById('score')
+
+			var gameOver = false
+
+			// Main function calls
+			init()
+			animate()
+
+			// Initiate Three.js scene
+			function init() {
+				scene = new THREE.Scene()
+				scene.background = new THREE.Color(0x87ceeb)
+
+				camera = new THREE.PerspectiveCamera(65, window.innerWidth/window.innerHeight, 1, 2000)
+				camera.position.set(0, 300, 550);
+				camera.rotation.y = -Math.PI
+
+				var canvas = document.getElementById("threejs_scene");
+
+				renderer = new THREE.WebGLRenderer({antialias: true});
+				renderer.setSize(window.innerWidth, window.innerHeight);
+				renderer.shadowMap.enabled = true
+				document.body.appendChild(renderer.domElement);
+
+
+				// Ambient lighting
+				ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
+				scene.add(ambientLight)
+
+				// Direction lighting
+				directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+				directionalLight.position.set = (0, 0, 1);
+				directionalLight.castShadow = true;
+				scene.add(directionalLight);
+
+				// Initiate objects on scene
+				initObjects()
+
+				// The camera point toward the center of the plane
+				camera.lookAt(plane.position)
+
+				startTime = clock.getElapsedTime()
+
+				// Add user keyboard input
+				document.addEventListener('keydown', keyInput, false)
+			}
+
+
+			// Initiate objects on scene
+			function initObjects() {
+				// Draw objects
+				drawPlane()
+				drawThreadmill()
+				drawPlayer()
+				drawPlayerCanon()
+
+				// Player start at middle left on the plane
+				playerStartPosition()
+			}
+
+			// Draw the plane / floor
+			function drawPlane() {
+				var geo = new THREE.BoxGeometry(planeWidth, planeHeight, planeDepth);
+				var mat = new THREE.MeshPhongMaterial({
+					color: planeColor,
+					shininess: 0.8,
+					reflectivity: 1
+				});
+				plane = new THREE.Mesh(geo, mat);
+				plane.rotation.x -= Math.PI/2;
+				plane.receiveShadow = true
+				plane.name = "plane"
+				scene.add(plane)
+			}
+
+			// Draw the treadmill
+			function drawThreadmill() {
+				var geo = new THREE.BoxGeometry(playerWidth, planeHeight, 5)
+				var mat = new THREE.MeshPhongMaterial({
+					color: 0x666666
+				})
+				var threadmill = new THREE.Mesh(geo, mat)
+				threadmill.rotation.x = Math.PI / 2
+				threadmill.position.y = 10
+				threadmill.position.x = -350
+				scene.add(threadmill)
+			}
+
+			// Draw the player's body
+			function drawPlayer() {
+				var geo = new THREE.BoxGeometry(playerWidth, playerHeight, playerDepth);
+				var mat = new THREE.MeshPhongMaterial({
+					color: playerColor,
+					specular: 0.8
+				});
+				player = new THREE.Mesh(geo, mat);
+				player.castShadow = true
+				player.name = "player"
+				scene.add(player);
+			}
+
+			// Draw the player's canon / gun
+			function drawPlayerCanon() {
+				var geo = new THREE.CylinderGeometry(8, 12, 12, 8)
+				var mat = new THREE.MeshPhongMaterial({
+					color: 0x666666
+				})
+				var canon = new THREE.Mesh(geo, mat)
+				canon.rotation.x = Math.PI/2
+				canon.rotation.z = Math.PI/2
+				canon.position.x = player.position.x + playerWidth/2 + 6
+				player.add(canon)
+			}
+
+			// Draw the enemi
+			function drawEnemi(spawnPos) {
+				var geo = new THREE.BoxGeometry(playerWidth, playerHeight, playerDepth);
+				var mat = new THREE.MeshPhongMaterial({
+					color: 0xff6347,
+					specular: 0.8
+				});
+				var enemi = new THREE.Mesh(geo, mat)
+				enemi.position.x = 375
+				enemi.position.y = playerHeight / 2
+				enemi.position.z = spawnPos
+				enemi.isHit = false
+				enemi.name = "enemi"
+				enemies.push(enemi)
+				scene.add(enemi)
+			}
+
+			// Each enemi start on the right side of the plane, at a random depth (z-axis) and at a random time
+			function enemiStartPosition() {
+				// Row positions on z axis for where enemi can spawn ( 0 to 11 )
+				var positions = [-275, -225, -175, -125, -75, -25, 25, 75, 125, 175, 225, 275]
+
+				// Random number between 0 and 11
+				var randomPos = Math.floor(Math.random() * 11)
+
+				var position = positions[randomPos]
+
+				return position
+			}
+
+			/* Spawn enemi at set interval */
+			function spawnEnemi() {
+				if (enemiSpawnCounter % 50 == 0) {
+					drawEnemi(enemiStartPosition())
+				}
+				enemiSpawnCounter++
+
+				// Keep the spawn counter in control so it doesn't returns an unwanted exception/error
+				if (enemiSpawnCounter > 1000) {
+					enemiSpawnCounter = 0
+				}
+			}
+
+			// Enemi move toward the left side of the plane
+			function enemiMove() {
+				const planeMinLimit = -375
+				var speed = Math.floor(Math.random() * 4) + 2
+
+				for (var i = 0; i < enemies.length; i++) {
+					enemies[i].position.x -= speed
+					// Check if the enemie has reached the end of the plane, i.e the left side
+					if (enemies[i].position.x < planeMinLimit) {
+						scene.remove(enemies[i])
+						if (enemies[i].isHit == false){
+							gameOver = true
+						}
+					}
+				}
+			}
+
+			// Player starts at middle left side of plane
+			function playerStartPosition() {
+				player.position.x = -350
+				player.position.y = 25
+				player.position.z = 25
+			}
+
+			// Draw a projectile
+			function drawProjectile() {
+				var geo = new THREE.SphereGeometry(8, 6, 6)
+				var mat = new THREE.MeshPhongMaterial({
+					color: 0xffffff,
+					specular: 0.8
+				})
+				projectile = new THREE.Mesh(geo, mat)
+				projectile.position.x = player.position.x
+				projectile.position.y = player.position.y
+				projectile.position.z = player.position.z
+				projectiles.push(projectile)
+
+				scene.add(projectile)
+			}
+
+			// Shoot projectile
+			function playerShoot(){
+				for (var i = 0; i < projectiles.length; i++) {
+					if (projectile != undefined && projectile != null) {
+						projectiles[i].position.x += 10
+					}
+					// Remove projectile from scene if its out of the viewport/window
+					if (projectiles[i].position.x > window.innerWidth) {
+						scene.remove(projectiles[i])
+					}
+				}
+			}
+
+			// Detect collisions between projectiles and enemies
+			function detectCollision() {
+				for (var j = 0; j < enemies.length; j++) {
+					var enemiBB = new THREE.Box3().setFromObject(enemies[j])
+					for (var i = 0; i < projectiles.length; i++) {
+						var projectileBB = new THREE.Box3().setFromObject(projectiles[i])
+
+						var collision = enemiBB.intersectsBox(projectileBB)
+
+						// If a collision has been detected
+						if (collision) {
+							enemies[j].isHit = true
+							scene.remove(enemies[j])
+							scene.remove(projectiles[i])
+							projectiles[i].material = undefined
+							projectiles[i].geometry = undefined
+							enemies[j].geometry = undefined
+						}
+					}
+				}
+			}
+
+			// Show player's score on screen
+			function calculateScore() {
+				score = Math.floor(currentTime.getElapsedTime())
+				scoreUI.innerHTML = score
+			}
+
+			// Show the game over text on screen
+			function showGameOver() {
+				document.getElementById('game-over').innerHTML = "GAME OVER"
+			}
+
+			function showTryAgain() {
+				document.getElementById('try-again').innerHTML = "PRESS SPACE PLAY"
+			}
+
+			function createTryAgain() {
+				tryAgainButton = document.createElement('button')
+				tryAgainButton.innerHTML = 'TRY AGAIN'
+				document.getElementById('try-again').appendChild(tryAgainButton)
+			}
+
+
+			// Start a new game, resets object
+			function restart() {
+				enemies = []
+				projectiles = []
+				currentTime = clock.getElapsedTime() - startTime	// Restart the score counter for next round
+				score = 0
+				gameOver = false
+
+				scene.remove(scene.getObjectByName("enemi"))
+				scene.remove(scene.getObjectByName("player"))
+
+				initObjects()
+				animate()
+			}
+
+			// Player keyboard inputs to move and shoot
+			function keyInput() {
+				document.onkeydown = function(e) {
+					//W or Arrow Up
+					if ((e.keyCode == 87 || e.keyCode == 38) && player.position.z > -300 + playerHeight / 2 ) {
+						player.position.z -= 50
+					}
+					//S or Arrow Down
+					if ((e.keyCode == 83 || e.keyCode == 40) && player.position.z < 300 - playerHeight / 2) {
+						player.position.z += 50
+					}
+					// Spacebar
+					if (e.keyCode == 32) {
+						drawProjectile()
+					}
+				}
+				playerShoot()
+			}
+
+			// All updatable functions are in here
+			function update() {
+				keyInput()
+				enemiMove()
+				detectCollision()
+				spawnEnemi()
+				calculateScore()
+			}
+
+			// Animation loop
+			function animate() {
+				renderer.render(scene, camera)
+				update()
+
+				// If player loses, we restart a new game
+				if (gameOver) {
+					showGameOver()
+					setTimeout(function() {restart()}, 2000)
+					return
+				}
+				requestAnimationFrame(animate)
+			}
+		</script>
+
+		<!-- Game UI -->
+		<div class="container" id='score-holder'>
+			<div class="row">
+				<div id='instructions' class="col-sm">
+					<p class="score">W or Up Arrow : Move up</p>
+					<p class="score">S or Down Arrow : Move down</p>
+					<p class="score">Spacebar : Shoot</p>
+				</div>
+				<div class="col-sm">
+					<h2 class='score' style="color: white;">SCORE</h2>
+					<h2 class='score' id='score' style="color: white;"></h2>
+					<h1 id='game-over'></h1>
+					<div id='try-again'>
+				</div>
+				<div class="col-sm">
+				</div>
+			</div>
+		</div>
+
+	</body>
+</html>
