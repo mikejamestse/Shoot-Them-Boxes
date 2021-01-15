@@ -13,10 +13,10 @@ To run:
 `http-server . -p 8000`
 
 ## How to play
-The goal of the game is to shoot the boxes before they arrive at the end of the floor.
+The goal of the game is to shoot the boxes before they arrive at the end of the floor!
 
-W or Up arrow : Move up
-S or Down arrow : Move down
+W or Up arrow : Move up </br>
+S or Down arrow : Move down </br>
 Spacebar : Shoot
 
 
