@@ -24,6 +24,8 @@ W or Up arrow : Move up </br>
 S or Down arrow : Move down </br>
 Spacebar : Shoot
 
+## Images
 
+![Screenshot](ShootThemBoxes.png)
 
 
