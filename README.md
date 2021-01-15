@@ -1,6 +1,11 @@
 # Shoot-Them-Boxes
 3D shooter game made with Three.js and Javascript. 
 
+## Dependency
+Three.js library.
+
+You can download it [here](https://threejs.org/)
+
 ## Running the game
 A server is needed to run the "ShootThemUp.html" file.
 
