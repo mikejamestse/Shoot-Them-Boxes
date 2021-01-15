@@ -4,6 +4,14 @@
 ## Running the game
 A server is needed to run the "ShootThemUp.html" file.
 
+Example with Node.js http-server.
+
+To install:
+`npm install http-server -g`
+
+To run:
+`http-server . -p 8000`
+
 ## How to play
 The goal of the game is to shoot the boxes before they arrive at the end of the floor.
 
