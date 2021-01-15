@@ -4,7 +4,7 @@
 ## Running the game
 A server is needed to run the "ShootThemUp.html" file.
 
-Example with Node.js http-server.
+Example with Node.js http-server as a local server.
 
 To install:
 `npm install http-server -g`
