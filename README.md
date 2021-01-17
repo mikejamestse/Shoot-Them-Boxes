@@ -1,5 +1,5 @@
 # Shoot-Them-Boxes
-3D shooter game made with Three.js and Javascript. 
+3D shooter game made with Three.js, Javascript, HTML and CSS. 
 
 ## Dependency
 Three.js library.
@@ -18,7 +18,7 @@ To run:
 `http-server . -p 8000`
 
 ## How to play
-The goal of the game is to shoot the boxes before they arrive at the end of the floor!
+Shoot the boxes before they arrive at the end of the floor!
 
 W or Up arrow : Move up </br>
 S or Down arrow : Move down </br>
