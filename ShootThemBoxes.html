@@ -43,11 +43,6 @@
 			// Array containg projectiles
 			var projectiles = []
 
-			// Time fields
-			var clock = new THREE.Clock()
-			var startTime
-			var currentTime = new THREE.Clock()
-
 			// Score fields
 			var score = 0
 			var scoreUI = document.getElementById('score')
@@ -90,8 +85,6 @@
 
 				// The camera point toward the center of the plane
 				camera.lookAt(plane.position)
-
-				startTime = clock.getElapsedTime()
 
 				// Add user keyboard input
 				document.addEventListener('keydown', keyInput, false)
@@ -161,6 +154,7 @@
 				canon.rotation.x = Math.PI/2
 				canon.rotation.z = Math.PI/2
 				canon.position.x = player.position.x + playerWidth/2 + 6
+				canon.name = "canon"
 				player.add(canon)
 			}
 
@@ -210,7 +204,9 @@
 			// Enemi move toward the left side of the plane
 			function enemiMove() {
 				const planeMinLimit = -375
-				var speed = Math.floor(Math.random() * 4) + 2
+				const velocity = 3
+
+				var speed = velocity
 
 				for (var i = 0; i < enemies.length; i++) {
 					enemies[i].position.x -= speed
@@ -277,6 +273,7 @@
 							projectiles[i].material = undefined
 							projectiles[i].geometry = undefined
 							enemies[j].geometry = undefined
+							score ++
 						}
 					}
 				}
@@ -284,7 +281,6 @@
 
 			// Show player's score on screen
 			function calculateScore() {
-				score = Math.floor(currentTime.getElapsedTime())
 				scoreUI.innerHTML = score
 			}
 
@@ -293,30 +289,39 @@
 				document.getElementById('game-over').innerHTML = "GAME OVER"
 			}
 
-			function showTryAgain() {
-				document.getElementById('try-again').innerHTML = "PRESS SPACE PLAY"
-			}
-
-			function createTryAgain() {
-				tryAgainButton = document.createElement('button')
-				tryAgainButton.innerHTML = 'TRY AGAIN'
-				document.getElementById('try-again').appendChild(tryAgainButton)
-			}
-
-
 			// Start a new game, resets object
 			function restart() {
+				// Remove all enemies from scene
+				for (var i = 0; i < enemies.length; i++) {
+					scene.remove(enemies[i])
+					enemies[i].geometry = undefined
+					enemies[i].material = undefined
+				}
+
+				// Remove all projectiles from scene
+				for (var i = 0; i < projectiles.length; i++) {
+					scene.remove(projectiles[i])
+					projectiles[i].geometry = undefined
+					projectiles[i].material = undefined
+				}
+
+				// Remove player from scene
+				scene.remove(player)
+				player = undefined
+
+				// Reset fields
 				enemies = []
 				projectiles = []
-				currentTime = clock.getElapsedTime() - startTime	// Restart the score counter for next round
 				score = 0
 				gameOver = false
 
-				scene.remove(scene.getObjectByName("enemi"))
-				scene.remove(scene.getObjectByName("player"))
+				// Redraw player at default position
+				drawPlayer()
+				drawPlayerCanon()
+				playerStartPosition()
 
-				initObjects()
 				animate()
+
 			}
 
 			// Player keyboard inputs to move and shoot
@@ -335,6 +340,7 @@
 						drawProjectile()
 					}
 				}
+				// Shoot projectile
 				playerShoot()
 			}
 
@@ -355,9 +361,11 @@
 				// If player loses, we restart a new game
 				if (gameOver) {
 					showGameOver()
+					// Wait 2 seconds before new game
 					setTimeout(function() {restart()}, 2000)
 					return
 				}
+
 				requestAnimationFrame(animate)
 			}
 		</script>
