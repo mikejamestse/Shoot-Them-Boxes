@@ -15,7 +15,7 @@ To install:
 `npm install http-server -g`
 
 To run:
-`http-server . -p 8000`
+`http-server . -p <portNumber>`
 
 ## How to play
 Shoot the boxes before they arrive at the end of the floor!
