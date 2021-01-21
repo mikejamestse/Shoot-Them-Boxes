@@ -6,16 +6,26 @@ Three.js library.
 
 You can download it [here](https://threejs.org/)
 
-## Running the game
-A server is needed to run the "ShootThemUp.html" file.
+Add it to the ShootThemBoxes folder.
 
-Example with Node.js http-server as a local server.
+When unzipped, make sure the folder name is **three.js-master**.
+
+## Running the game
+Naviguate to the ShootThemBoxes directory.
+
+A server is needed to run the "ShootThemBoxes.html" file.
+
+Example with Node.js http-server as a local server, npm has to be pre-installed.
 
 To install:
 `npm install http-server -g`
 
 To run:
-`http-server . -p <portNumber>`
+`http-server`
+
+By default, Node.js will use **localhost:8080**
+
+Enjoy the game by typing http://localhost:8080/ in your browser!
 
 ## How to play
 Shoot the boxes before they arrive at the end of the floor!
