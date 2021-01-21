@@ -18,7 +18,7 @@ A server is needed to run the "ShootThemBoxes.html" file.
 Example with Node.js http-server as a local server, npm has to be pre-installed.
 
 To install:
-`npm install http-server -g`
+`npm install http-server -g` The -g option is to install globally, can be omitted.
 
 To run:
 `http-server`
