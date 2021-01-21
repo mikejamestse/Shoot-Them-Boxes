@@ -289,6 +289,10 @@
 				document.getElementById('game-over').innerHTML = "GAME OVER"
 			}
 
+			function unshowGameOver() {
+				document.getElementById('game-over').innerHTML = " "
+			}
+
 			// Start a new game, resets object
 			function restart() {
 				// Remove all enemies from scene
@@ -319,6 +323,9 @@
 				drawPlayer()
 				drawPlayerCanon()
 				playerStartPosition()
+
+				// Remove Game Over 
+				unshowGameOver()
 
 				animate()
 
@@ -379,10 +386,11 @@
 					<p class="score">Spacebar : Shoot</p>
 				</div>
 				<div class="col-sm">
+				</div>
+				<div class="col-sm">
 					<h2 class='score' style="color: white;">SCORE</h2>
 					<h2 class='score' id='score' style="color: white;"></h2>
 					<h1 id='game-over'></h1>
-					<div id='try-again'>
 				</div>
 				<div class="col-sm">
 				</div>
